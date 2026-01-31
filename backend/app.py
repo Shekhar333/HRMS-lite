@@ -22,7 +22,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="HRMS Lite API", version="1.0.0", lifespan=lifespan)
 
 # CORS configuration
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173")
+CORS_ORIGINS = ["*"] if cors_origins_str == "*" else cors_origins_str.split(",")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
