@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import api from '../api/axios';
+import { FormField, InputWithClear, RefreshIcon } from './common';
 
 // Validation schemas
 const employeeSchema = z.object({
@@ -268,101 +269,116 @@ function AddEmployee({ onEmployeeAdded }) {
       />
       <h2>Add New Employee</h2>
       <form onSubmit={handleSubmit} className="form">
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="full_name">Full Name *</label>
-            <input
-              type="text"
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+          <FormField
+            label="Full Name"
+            htmlFor="full_name"
+            required
+          >
+            <InputWithClear
               id="full_name"
               name="full_name"
               value={formData.full_name}
               onChange={handleChange}
-              required
-              disabled={loading}
               placeholder="John Doe"
+              disabled={loading}
+              required
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="employee_id">
-              Employee ID * 
-              {checkingId && <span style={{ marginLeft: '8px', color: '#f59e0b', fontSize: '0.875rem' }}>Checking...</span>}
-              {!checkingId && idExists && <span style={{ marginLeft: '8px', color: '#dc2626', fontSize: '0.875rem' }}>Already exists!</span>}
-              {!checkingId && !idExists && formData.employee_id && (
-                <span style={{ marginLeft: '8px', color: '#16a34a', fontSize: '0.875rem' }}>Available ✓</span>
-              )}
-            </label>
-            <div style={{ position: 'relative', width: '100%' }}>
-              <input
-                type="text"
+          </FormField>
+
+          <FormField
+            label="Employee ID"
+            htmlFor="employee_id"
+            required
+            status={
+              checkingId ? 'Checking...' :
+              idExists ? 'Already exists!' :
+              formData.employee_id ? 'Available ✓' : null
+            }
+            statusType={
+              checkingId ? 'loading' :
+              idExists ? 'error' :
+              formData.employee_id ? 'success' : 'info'
+            }
+          >
+            <div style={{ position: 'relative', display: 'block', width: '100%' }}>
+              <InputWithClear
                 id="employee_id"
                 name="employee_id"
                 value={formData.employee_id}
                 onChange={handleChange}
-                required
-                disabled={loading}
                 placeholder="Enter ID or Generate"
+                disabled={loading}
+                required
+                success={!checkingId && !idExists && !!formData.employee_id}
                 style={{
                   width: '100%',
-                  paddingRight: '110px',
-                  borderColor: idExists ? '#dc2626' : (!checkingId && formData.employee_id ? '#16a34a' : '')
+                  paddingRight: '45px',
+                  borderColor: idExists ? 'var(--danger-color)' : ''
                 }}
               />
               <button
                 type="button"
                 onClick={handleGenerateId}
                 disabled={loading || checkingId}
-                className="btn"
+                title="Generate ID"
                 style={{
                   position: 'absolute',
                   top: '50%',
-                  right: '4px',
-                  backgroundColor: '#36C236',
+                  right: '10px',
                   transform: 'translateY(-50%)',
-                  padding: '8px 16px',
-                  fontSize: '0.875rem',
-                  whiteSpace: 'nowrap',
-                  zIndex: 2,
-                  height: '80%' // keeps button height close to input
+                  background: 'none',
+                  border: 'none',
+                  cursor: loading || checkingId ? 'not-allowed' : 'pointer',
+                  padding: '0',
+                  margin: '0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: loading || checkingId ? 0.5 : 1,
+                  transition: 'opacity 0.2s',
+                  height: '24px',
+                  width: '24px',
+                  zIndex: 10
                 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" style={{ verticalAlign: 'middle' }}>
-                  <path d="M23 4v6h-6" />
-                  <path d="M1 20v-6h6" />
-                  <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10" />
-                  <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14" />
-                </svg>
+                <RefreshIcon size={18} color="#36C236" />
               </button>
             </div>
-            
-          </div>
-          <div className="form-group">
-            <label htmlFor="email">Email Address *</label>
+          </FormField>
+
+          <FormField
+            label="Email Address"
+            htmlFor="email"
+            required
+          >
             <input
               type="email"
               id="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              required
               disabled={loading}
+              required
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="department">Department *</label>
-            <input
-              type="text"
+          </FormField>
+
+          <FormField
+            label="Department"
+            htmlFor="department"
+            required
+          >
+            <InputWithClear
               id="department"
               name="department"
               value={formData.department}
               onChange={handleChange}
-              required
+              placeholder="e.g. Engineering, HR, Sales"
               disabled={loading}
+              required
             />
-          </div>
+          </FormField>
         </div>
-        {/* <div className="form-row">
-          
-        </div> */}
         {error && (
           <div className="error-message">
             <div style={{ fontWeight: '600', marginBottom: '8px' }}>Validation Errors:</div>

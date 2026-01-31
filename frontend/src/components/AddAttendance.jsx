@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import toast, { Toaster } from 'react-hot-toast';
 import api from '../api/axios';
+import SearchableDropdown from './common/SearchableDropdown';
+import InputWithClear from './common/InputWithClear';
+import FormField from './common/FormField';
+import SelectedBadge from './common/SelectedBadge';
 
-// Validation schema
 const attendanceSchema = z.object({
   employee_id: z.string().min(1, 'Employee is required'),
   date: z.string().min(1, 'Date is required'),
@@ -44,7 +47,6 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
     }
   };
 
-  // Search/filter employees
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
@@ -57,7 +59,6 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
       return;
     }
 
-    // Search by employee_id or name (case-insensitive)
     const filtered = employees.filter(emp => 
       emp.employee_id.toLowerCase().includes(query.toLowerCase()) ||
       emp.full_name.toLowerCase().includes(query.toLowerCase())
@@ -66,7 +67,6 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
     setFilteredEmployees(filtered);
   };
 
-  // Select employee from dropdown
   const handleSelectEmployee = (employee) => {
     setSelectedEmployee(employee);
     setSearchQuery(`${employee.employee_id} - ${employee.full_name}`);
@@ -75,7 +75,6 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
     setError('');
   };
 
-  // Clear selection
   const handleClearSelection = () => {
     setSelectedEmployee(null);
     setSearchQuery('');
@@ -95,7 +94,6 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate with Zod
     try {
       attendanceSchema.parse(formData);
     } catch (err) {
@@ -119,7 +117,7 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
     try {
       await api.post('/api/attendance', formData);
       setSuccess('Attendance marked successfully!');
-      toast.success(`✅ Attendance marked for ${selectedEmployee.full_name}`);
+      toast.success(`Attendance marked for ${selectedEmployee.full_name}`);
       
       setFormData({
         employee_id: '',
@@ -151,120 +149,47 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
       ) : (
         <form onSubmit={handleSubmit} className="form">
           <div className="form-row">
-            <div className="form-group" style={{ position: 'relative' }}>
-              <label htmlFor="employee_search">
-                Search Employee * 
-                {searchLoading && <span style={{ marginLeft: '8px', color: '#f59e0b' }}>Loading...</span>}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="text"
+            <div style={{ position: 'relative' }}>
+              <FormField
+                label="Search Employee"
+                htmlFor="employee_search"
+                required
+                status={searchLoading ? 'Loading...' : null}
+                statusType="loading"
+              >
+                <InputWithClear
                   id="employee_search"
                   value={searchQuery}
                   onChange={handleSearchChange}
                   onFocus={() => setShowDropdown(true)}
+                  success={!!selectedEmployee}
                   placeholder="Search by ID or Name..."
-                  required
                   disabled={loading}
-                  style={{
-                    paddingRight: selectedEmployee ? '40px' : '12px',
-                    borderColor: selectedEmployee ? '#16a34a' : ''
-                  }}
+                  required
                 />
-                {selectedEmployee && (
-                  <button
-                    type="button"
-                    onClick={handleClearSelection}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1.2rem',
-                      color: '#6b7280',
-                      padding: '0 5px'
-                    }}
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
+              </FormField>
               
-              {showDropdown && searchQuery && filteredEmployees.length > 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  maxHeight: '200px',
-                  overflowY: 'auto',
-                  backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  marginTop: '4px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  zIndex: 10
-                }}>
-                  {filteredEmployees.map((employee) => (
-                    <div
-                      key={employee.id}
-                      onClick={() => handleSelectEmployee(employee)}
-                      style={{
-                        padding: '12px 16px',
-                        cursor: 'pointer',
-                        borderBottom: '1px solid #f3f4f6',
-                        transition: 'background-color 0.2s'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f9fafb'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
-                    >
-                      <div style={{ fontWeight: '500', color: '#111827' }}>
-                        {employee.full_name}
-                      </div>
-                      <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                        {employee.employee_id} • {employee.department}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {showDropdown && searchQuery && filteredEmployees.length === 0 && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  right: 0,
-                  backgroundColor: 'white',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '8px',
-                  marginTop: '4px',
-                  padding: '12px 16px',
-                  color: '#6b7280',
-                  zIndex: 10
-                }}>
-                  No employees found
-                </div>
-              )}
+              <SearchableDropdown
+                items={filteredEmployees}
+                searchQuery={searchQuery}
+                showDropdown={showDropdown}
+                onSelect={handleSelectEmployee}
+                emptyMessage="No employees found"
+              />
               
               {selectedEmployee && (
-                <div style={{
-                  marginTop: '8px',
-                  padding: '8px 12px',
-                  backgroundColor: '#d1fae5',
-                  borderRadius: '6px',
-                  fontSize: '0.875rem',
-                  color: '#065f46'
-                }}>
-                  ✓ Selected: {selectedEmployee.full_name} ({selectedEmployee.employee_id})
-                </div>
+                <SelectedBadge 
+                  text={`Selected: ${selectedEmployee.full_name} (${selectedEmployee.employee_id})`}
+                  variant="success"
+                />
               )}
             </div>
-            <div className="form-group">
-              <label htmlFor="date">Date *</label>
+
+            <FormField
+              label="Date"
+              htmlFor="date"
+              required
+            >
               <input
                 type="date"
                 id="date"
@@ -275,9 +200,13 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
                 disabled={loading}
                 max={new Date().toISOString().split('T')[0]}
               />
-            </div>
-            <div className="form-group">
-              <label htmlFor="status">Status *</label>
+            </FormField>
+
+            <FormField
+              label="Status"
+              htmlFor="status"
+              required
+            >
               <select
                 id="status"
                 name="status"
@@ -289,7 +218,7 @@ function AddAttendance({ onAttendanceMarked, refreshEmployees }) {
                 <option value="Present">Present</option>
                 <option value="Absent">Absent</option>
               </select>
-            </div>
+            </FormField>
           </div>
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}

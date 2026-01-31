@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { ActionButton, DeleteIcon } from './common';
 
 function EmployeeList({ refresh, onEmployeeDeleted }) {
   const [employees, setEmployees] = useState([]);
@@ -83,37 +84,12 @@ function EmployeeList({ refresh, onEmployeeDeleted }) {
                   <td>{employee.email}</td>
                   <td>{employee.department}</td>
                   <td>
-                    <button
-                      className="btn-danger btn-small"
+                    <ActionButton
+                      variant="danger"
+                      icon={<DeleteIcon />}
                       onClick={() => handleDelete(employee.employee_id)}
                       disabled={deleting === employee.employee_id}
-                    >
-                      
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="18"
-                          height="18"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          style={{ verticalAlign: 'middle' }}
-                        >
-                          <path
-                            d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M9 10v6M12 10v6M15 10v6"
-                            stroke="white"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      
-                    </button>
+                    />
                   </td>
                 </tr>
               ))}

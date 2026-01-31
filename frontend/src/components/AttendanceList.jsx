@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { FormField, InputWithClear } from './common';
 
 function AttendanceList({ refresh }) {
   const [attendance, setAttendance] = useState([]);
@@ -72,23 +73,27 @@ function AttendanceList({ refresh }) {
 
   return (
     <div className="card">
-      <h2>Attendance Records ({attendance.length})</h2>
+      <h2>Attendance Records </h2>
       
       <form onSubmit={handleFilterSubmit} className="filter-form">
         <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="filter_employee_id">Employee ID</label>
-            <input
-              type="text"
+          <FormField
+            label="Employee ID"
+            htmlFor="filter_employee_id"
+          >
+            <InputWithClear
               id="filter_employee_id"
               name="employee_id"
               value={filter.employee_id}
               onChange={handleFilterChange}
               placeholder="Filter by Employee ID"
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="filter_start_date">Start Date</label>
+          </FormField>
+
+          <FormField
+            label="Start Date"
+            htmlFor="filter_start_date"
+          >
             <input
               type="date"
               id="filter_start_date"
@@ -96,9 +101,12 @@ function AttendanceList({ refresh }) {
               value={filter.start_date}
               onChange={handleFilterChange}
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="filter_end_date">End Date</label>
+          </FormField>
+
+          <FormField
+            label="End Date"
+            htmlFor="filter_end_date"
+          >
             <input
               type="date"
               id="filter_end_date"
@@ -106,9 +114,9 @@ function AttendanceList({ refresh }) {
               value={filter.end_date}
               onChange={handleFilterChange}
             />
-          </div>
+          </FormField>
         </div>
-        <div className="filter-actions">
+        <div className="filter-actions" style={{ marginTop: '16px', gap: '12px' }}>
           <button type="submit" className="btn btn-secondary btn-small">
             Apply Filter
           </button>

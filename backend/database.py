@@ -14,7 +14,6 @@ database = None
 async def connect_to_mongo():
     global client, database
     try:
-        # Use certifi for SSL certificate verification (best practice)
         import certifi
         client = AsyncIOMotorClient(
             MONGODB_URL,
@@ -23,15 +22,12 @@ async def connect_to_mongo():
         )
         database = client[DATABASE_NAME]
     except ImportError:
-        # Fallback if certifi is not available (shouldn't happen, but just in case)
         print("Warning: certifi not found, using default SSL settings")
         client = AsyncIOMotorClient(MONGODB_URL, tls=True)
         database = client[DATABASE_NAME]
     except Exception as e:
-        # If SSL verification still fails, provide helpful error message
         print(f"Error connecting to MongoDB: {e}")
         print("Trying with relaxed SSL settings for development...")
-        # Development fallback - remove this in production!
         client = AsyncIOMotorClient(
             MONGODB_URL,
             tls=True,
@@ -39,7 +35,6 @@ async def connect_to_mongo():
         )
         database = client[DATABASE_NAME]
     
-    # Create indexes
     await database.employees.create_indexes([
         IndexModel([("employee_id", ASCENDING)], unique=True)
     ])

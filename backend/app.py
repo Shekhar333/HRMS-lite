@@ -13,15 +13,13 @@ load_dotenv()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     await connect_to_mongo()
     yield
-    # Shutdown
     await close_mongo_connection()
 
 app = FastAPI(title="HRMS Lite API", version="1.0.0", lifespan=lifespan)
 
-# CORS configuration
+    # CORS configuration
 cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173")
 CORS_ORIGINS = ["*"] if cors_origins_str == "*" else cors_origins_str.split(",")
 
@@ -41,13 +39,11 @@ async def root():
 async def health_check():
     return {"status": "healthy"}
 
-# Employee Endpoints
 
 @app.post("/api/employees", response_model=EmployeeResponse, status_code=status.HTTP_201_CREATED)
 async def create_employee(employee: Employee):
     db = get_database()
     
-    # Check for duplicate employee_id
     existing = await db.employees.find_one({"employee_id": employee.employee_id})
     if existing:
         raise HTTPException(
@@ -55,7 +51,6 @@ async def create_employee(employee: Employee):
             detail=f"Employee with ID {employee.employee_id} already exists"
         )
     
-    # Check for duplicate email
     existing_email = await db.employees.find_one({"email": employee.email})
     if existing_email:
         raise HTTPException(
@@ -94,18 +89,15 @@ async def delete_employee(employee_id: str):
             detail=f"Employee with ID {employee_id} not found"
         )
     
-    # Also delete all attendance records for this employee
     await db.attendance.delete_many({"employee_id": employee_id})
     
     return None
 
-# Attendance Endpoints
 
 @app.post("/api/attendance", response_model=AttendanceResponse, status_code=status.HTTP_201_CREATED)
 async def mark_attendance(attendance: Attendance):
     db = get_database()
     
-    # Check if employee exists
     employee = await db.employees.find_one({"employee_id": attendance.employee_id})
     if not employee:
         raise HTTPException(
@@ -113,7 +105,6 @@ async def mark_attendance(attendance: Attendance):
             detail=f"Employee with ID {attendance.employee_id} not found"
         )
     
-    # Check if attendance already marked for this date
     existing = await db.attendance.find_one({
         "employee_id": attendance.employee_id,
         "date": attendance.date.isoformat()
