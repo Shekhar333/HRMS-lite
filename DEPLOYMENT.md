@@ -330,4 +330,101 @@ If you encounter issues:
 
 ---
 
+## Troubleshooting Common Deployment Errors
+
+### ❌ Error: "Read-only file system" or Rust compilation errors
+
+**Problem:** Render is trying to compile `pydantic-core` from source
+
+**Solution:**
+
+1. Update `render.yaml` to use binary wheels:
+```yaml
+buildCommand: |
+  cd backend
+  pip install --upgrade pip setuptools wheel
+  pip install --only-binary=:all: --prefer-binary -r requirements.txt || pip install -r requirements.txt
+```
+
+2. Ensure `runtime.txt` specifies Python version:
+```
+python-3.11.9
+```
+
+3. Alternative: Use Docker deployment instead
+
+### ❌ Error: "Address already in use"
+
+**Problem:** Port is already occupied
+
+**Solution:**
+```bash
+# Find process using port
+lsof -ti:8000 | xargs kill -9
+
+# Or use different port
+uvicorn app:app --port 8001
+```
+
+### ❌ Error: "CORS policy" errors in browser
+
+**Problem:** Frontend can't connect to backend
+
+**Solution:** Update `backend/app.py`:
+```python
+origins = [
+    "http://localhost:5173",
+    "https://your-frontend.vercel.app",  # Add your Vercel URL
+]
+```
+
+### ❌ Error: "Cannot connect to MongoDB"
+
+**Problem:** Connection string or network access issue
+
+**Solutions:**
+1. Verify connection string in environment variables
+2. Check MongoDB Atlas Network Access allows `0.0.0.0/0`
+3. Ensure database user has correct permissions
+4. Test connection locally first
+
+### ❌ Error: "Module not found" on Render
+
+**Problem:** Dependencies not installed
+
+**Solution:**
+1. Check `requirements.txt` is in correct location
+2. Verify `buildCommand` path in `render.yaml`
+3. Check build logs for installation errors
+
+### ❌ Frontend build fails on Vercel
+
+**Problem:** Missing dependencies or build errors
+
+**Solutions:**
+1. Run `npm install` locally to verify
+2. Check `package.json` has all dependencies
+3. Verify `vite.config.js` is correct
+4. Check Vercel build logs
+
+### 🔧 Using Docker (Alternative Deployment)
+
+If you continue having issues with Render's standard deployment, use Docker:
+
+1. **Dockerfile is already created** in the project root
+
+2. **Build and test locally:**
+```bash
+docker build -t hrms-backend .
+docker run -p 8000:8000 -e MONGODB_URL="your_url" hrms-backend
+```
+
+3. **Deploy to Render with Docker:**
+   - In Render Dashboard → New Web Service
+   - Select "Docker" instead of "Python"
+   - Use the existing Dockerfile
+   - Set environment variables
+
+---
+
 **Congratulations! Your HRMS Lite application is now live! 🎉**
