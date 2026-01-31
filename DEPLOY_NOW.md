@@ -16,6 +16,9 @@ If you already created the service:
 2. Click **"Settings"**
 3. Scroll to **"Build & Deploy"** section
 
+
+"update"
+
 ### Step 2: Configure Docker Settings
 
 Set these values:
